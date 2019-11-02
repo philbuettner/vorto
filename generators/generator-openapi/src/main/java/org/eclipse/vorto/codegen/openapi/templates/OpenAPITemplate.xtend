@@ -175,30 +175,6 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		            application/json:
 		              schema:
 		                $ref: '#/components/schemas/AdvancedError'
-		  '/devices/{id}/services/«fbProperty.name»/state':
-		    get:
-		      summary: Retrieve the state of «fbProperty.name» service
-		      description: >-
-		        Returns the «fbProperty.name» state of the «infomodel.name» identified by the
-		        `id` path parameter.
-		      tags:
-		      - Services
-		      parameters:
-		      - $ref: '#/components/parameters/deviceIdPathParam'
-		      responses:
-		        '200':
-		          description: The «fbProperty.name» was successfully retrieved.
-		          content:
-		            application/json:
-		              schema:
-		                $ref: '#/components/schemas/«fbProperty.type.name»'
-		        '404':
-		          description: >-
-		            The entity could not be found. One of the defined query parameters was invalid.
-		          content:
-		            application/json:
-		              schema:
-		                $ref: '#/components/schemas/AdvancedError'
 		  «FOR event : fbProperty.type.functionblock.events»
 		  '/devices/{id}/features/«fbProperty.name»/outbox/messages/«event.name»':
 		    post:
@@ -237,7 +213,7 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		      «ENDIF»
 		  «ENDFOR»
 		  «FOR operation : fbProperty.type.functionblock.operations»
-		  '/devices/{id}/services/«fbProperty.name»/state/«operation.name»/':
+		  '/devices/{id}/services/«fbProperty.name»/state':
 		    put:
 		      summary: Executes the «operation.name» on the device
 		      description: |-
@@ -371,21 +347,24 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		      properties:
 		      «ENDIF»
 		        «IF fb.functionblock.status !== null && !fb.functionblock.status.properties.isEmpty»
-		        status:
-		          type: object
-		          properties:
-		            «FOR statusProperty : fb.functionblock.status.properties»
-		            «statusProperty.name»:
-		              «IF statusProperty.description !== null»description: «statusProperty.description»«ENDIF»
-		              «IF statusProperty.type instanceof PrimitivePropertyType»
-		              «wrapIfMultiple(getPrimitive((statusProperty.type as PrimitivePropertyType).type).toString,statusProperty.multiplicity)»
-		              «IF statusProperty.constraintRule !== null»
-		              «handleConstraints(statusProperty.constraintRule)»
-		              «ENDIF»
-		              «ELSEIF statusProperty.type instanceof ObjectPropertyType»
-		              «wrapIfMultiple("$ref: '#/components/schemas/"+(statusProperty.type as ObjectPropertyType).type.name+"'",statusProperty.multiplicity)»
-		            «ENDIF»
-		            «ENDFOR»
+		        «FOR operation : fb.functionblock.operations»
+		        '@type':
+		          type: string
+		          enum: [«operation.name»]
+		          description: The type of the object
+		        «ENDFOR»
+		        «FOR statusProperty : fb.functionblock.status.properties»
+		        «statusProperty.name»:
+		          «IF statusProperty.description !== null»description: «statusProperty.description»«ENDIF»
+		          «IF statusProperty.type instanceof PrimitivePropertyType»
+		          «wrapIfMultiple(getPrimitive((statusProperty.type as PrimitivePropertyType).type).toString,statusProperty.multiplicity)»
+		          «IF statusProperty.constraintRule !== null»
+		          «handleConstraints(statusProperty.constraintRule)»
+		          «ENDIF»
+		          «ELSEIF statusProperty.type instanceof ObjectPropertyType»
+		          «wrapIfMultiple("$ref: '#/components/schemas/"+(statusProperty.type as ObjectPropertyType).type.name+"'",statusProperty.multiplicity)»
+		          «ENDIF»
+		          «ENDFOR»
 		          «Utils.calculateRequired(fb.functionblock.status.properties)»
 		        «ENDIF»
 		        «IF fb.functionblock.configuration !== null && !fb.functionblock.configuration.properties.isEmpty»
@@ -409,12 +388,8 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		    «fb.name»:
 		      type: object
 		      properties:
-		        definition:
-		          $ref: '#/components/schemas/ServiceDefinition'
-		          description: The Definition of this «fb.name»
-		        properties:
+		        state:
 		          $ref: '#/components/schemas/«fb.name»States'
-		          description: The State Object of this «fb.name» service
 		    «ENDFOR»
 		    «infomodel.name»Services:
 		      type: object
@@ -498,20 +473,7 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		      content:
 		        application/json:
 		          schema:
-		            type: object
-		            properties:
-		              «FOR param : operation.params»
-		              «param.name»:
-		                «IF param.description !== null»description: «param.description»«ENDIF»
-		                «IF param instanceof PrimitiveParam»
-		                «wrapIfMultiple(getPrimitive((param as PrimitiveParam).type).toString,param.multiplicity)»
-		                «IF param.constraintRule !== null»
-		                «handleConstraints(param.constraintRule)»
-		                «ENDIF»
-		                «ELSEIF param instanceof RefParam»
-		                «wrapIfMultiple("$ref: '#/components/schemas/"+(param as RefParam).type.name+"'",param.multiplicity)»
-		                «ENDIF»
-		              «ENDFOR»
+		            $ref: '#/components/schemas/«fb.name»States'
 		    «ENDIF»
 		    «ENDFOR»
 		  «ENDFOR»
