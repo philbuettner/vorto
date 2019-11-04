@@ -227,10 +227,10 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		      properties:
 		        '@type':
 		          type: string
-		          description: The type of the object
+		          description: The type of the Object
 		        errorCode:
 		          type: string
-		          description: The error code of the occurred exception
+		          description: The error code of the occurred Exception
 		        statusCode:
 		          type: integer
 		          description: The HTTP status of the error
@@ -239,36 +239,36 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		      properties:
 		        '@type':
 		          type: string
-		          description: The type of the object
+		          description: The type of the Object
 		        rootDeviceId:
 		          type: string
-		          description: The MAC of the Smart Home Controller
+		          description: "A single fully qualified identifier of the Smart Home Controller."
 		        id:
 		          type: string
-		          description: The id of the device
+		          description: "A single fully qualified identifier of the Device."
 		        deviceServiceIds:
 		          $ref: '#/components/schemas/ServiceDefinition'		          
 		        manufacturer:
 		          type: string
-		          description: The manufacturer of the device
+		          description: The manufacturer of the Device
 		        roomId:
 		          type: string
-		          description: The id of the corresponding room
+		          description: The id of the corresponding Room
 		        deviceModel:
 		          type: string
-		          description: The model of the device
+		          description: The model of the Device
 		        serial:
 		          type: string
-		          description: The serial of the device
+		          description: The serial of the Device
 		        profile:
 		          type: string
-		          description: The profile of the device
+		          description: The profile of the Device
 		        name:
 		          type: string
-		          description: The name of the device
+		          description: The name of the Device
 		        status:
 		          type: string
-		          description: Indicates if the device is available
+		          description: Indicates if the Device is available
 		          enum: [AVAILABLE,UNAVAILABLE]
 		    
 		    ServiceDefinition:
@@ -277,7 +277,7 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		      uniqueItems: true
 		      items:
 		        type: string
-		        description: "A single fully qualified identifier of a Service."
+		        description: "A single fully qualified identifier of the Service of a Device."
 		      example:
 		        «FOR fbProperty : infomodel.properties»
 		        - «fbProperty.name»
@@ -308,7 +308,7 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		        '@type':
 		          type: string
 		          enum: [«operation.name»]
-		          description: The type of the object
+		          description: The type of the Object
 		        «ENDFOR»
 		        «FOR statusProperty : fb.functionblock.status.properties»
 		        «statusProperty.name»:
@@ -346,15 +346,19 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		        '@type':
 		          type: string
 		          enum: [DeviceServiceData]
+		          description: The type of the Object
 		        id: 
 		          type: string
 		          enum: [deviceServiceId]
+		          description: "A single fully qualified identifier of the Service of a Device."
 		        deviceId:
 		          type: string
+		          description: "A single fully qualified identifier of the Device."
 		        state:
 		          $ref: '#/components/schemas/«fb.name»States'
 		        path:
 		          type: string
+		          description: The path to the Property.
 		    «ENDFOR»
 		    «FOR entity : Utils.getReferencedEntities(infomodel)»
 		    «entity.name»:
@@ -432,7 +436,7 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		              '@type':
 		                type: string
 		                enum: [«operation.name»]
-		                description: The type of the object
+		                description: The type of the Object
 		              «FOR param : operation.params»
 		              «param.name»:
 		                «IF param.description !== null»description: «param.description»«ENDIF»
@@ -447,7 +451,7 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		    deviceIdPathParam:
 		      name: id
 		      in: path
-		      description: The ID of the Device
+		      description: "A single fully qualified identifier of the Device."
 		      required: true
 		      schema:
 		        type: string
