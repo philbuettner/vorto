@@ -21,7 +21,7 @@ import org.eclipse.vorto.core.api.model.datatype.PrimitiveType
 import org.eclipse.vorto.core.api.model.functionblock.Event
 import org.eclipse.vorto.core.api.model.functionblock.FunctionblockModel
 import org.eclipse.vorto.core.api.model.functionblock.Operation
-import org.eclipse.vorto.core.api.model.functionblock.PrimitiveParam
+//import org.eclipse.vorto.core.api.model.functionblock.PrimitiveParam
 import org.eclipse.vorto.core.api.model.functionblock.RefParam
 import org.eclipse.vorto.core.api.model.functionblock.ReturnObjectType
 import org.eclipse.vorto.core.api.model.functionblock.ReturnPrimitiveType
@@ -36,7 +36,7 @@ import org.eclipse.vorto.plugin.generator.utils.IFileTemplate
 class OpenAPITemplate implements IFileTemplate<InformationModel> {
 			
 	override getFileName(InformationModel model) {
-		'''«model.name»-openapi-v3.yml'''
+		'''«model.name»-local-openapi-v3.yml'''
 	}
 	
 	override getPath(InformationModel context) {
@@ -114,35 +114,6 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		            application/json:
 		              schema:
 		                $ref: '#/components/schemas/Device'
-		        '404':
-		          description: >-
-		            The entity could not be found. One of the defined query parameters was invalid.
-		          content:
-		            application/json:
-		              schema:
-		                $ref: '#/components/schemas/AdvancedError'
-		  ###
-		  ### «infomodel.name» Services
-		  ###
-		  '/devices/{id}/services':
-		    get:
-		      summary: List all services of a «infomodel.name» 
-		      description: >-
-		        Returns all services of the «infomodel.name» identified by the `id` path parameter.
-		      tags:
-		      - Services
-		      parameters:
-		      - $ref: '#/components/parameters/deviceIdPathParam'
-		      responses:
-		        '200':
-		          description: >-
-		            The list of services of the «infomodel.name» were successfully retrieved.
-		          content:
-		            application/json:
-		              schema:
-		                type: array
-		                items:
-		                  $ref: '#/components/schemas/«infomodel.name»Services'
 		        '404':
 		          description: >-
 		            The entity could not be found. One of the defined query parameters was invalid.
@@ -299,6 +270,7 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		          type: string
 		          description: Indicates if the device is available
 		          enum: [AVAILABLE,UNAVAILABLE]
+		    
 		    ServiceDefinition:
 		      type: array
 		      minItems: 1
@@ -306,6 +278,10 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		      items:
 		        type: string
 		        description: "A single fully qualified identifier of a Service."
+		      example:
+		        «FOR fbProperty : infomodel.properties»
+		        - «fbProperty.name»
+		        «ENDFOR»
 		    «FOR fb : Utils.getReferencedFunctionBlocks(infomodel)»
 		    «IF fb.functionblock.configuration !== null»
 		    «FOR configurationProperty : fb.functionblock.configuration.properties»
@@ -320,25 +296,6 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		      «ENDIF»
 		    «ENDFOR»
 		    «ENDIF»
-		    «FOR operation : fb.functionblock.operations»
-		    «IF !operation.params.empty»
-		    «fb.name»«operation.name.toFirstUpper»Payload:
-		      type: object
-		      properties:
-		        «FOR param : operation.params»
-		        «param.name»:
-		          «IF param.description !== null»description: «param.description»«ENDIF»
-		          «IF param instanceof PrimitiveParam»
-		          «wrapIfMultiple(getPrimitive((param as PrimitiveParam).type).toString,param.multiplicity)»
-		          «IF param.constraintRule !== null»
-		          «handleConstraints(param.constraintRule)»
-		          «ENDIF»
-		          «ELSEIF param instanceof RefParam»
-		          «wrapIfMultiple("$ref: '#/components/schemas/"+(param as RefParam).type.name+"'",param.multiplicity)»
-		          «ENDIF»
-		        «ENDFOR»
-		    «ENDIF»
-		    «ENDFOR»
 		    «fb.name»States:
 		      type: object
 		      description: «fb.name» states of «infomodel.name»
@@ -365,7 +322,6 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		          «wrapIfMultiple("$ref: '#/components/schemas/"+(statusProperty.type as ObjectPropertyType).type.name+"'",statusProperty.multiplicity)»
 		          «ENDIF»
 		          «ENDFOR»
-		          «Utils.calculateRequired(fb.functionblock.status.properties)»
 		        «ENDIF»
 		        «IF fb.functionblock.configuration !== null && !fb.functionblock.configuration.properties.isEmpty»
 		        configuration:
@@ -383,7 +339,6 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		              «wrapIfMultiple("$ref: '#/components/schemas/"+(configProperty.type as ObjectPropertyType).type.name+"'",configProperty.multiplicity)»
 		            «ENDIF»
 		            «ENDFOR»
-		          «Utils.calculateRequired(fb.functionblock.configuration.properties)»
 		        «ENDIF»
 		    «fb.name»:
 		      type: object
@@ -393,7 +348,7 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		          enum: [DeviceServiceData]
 		        id: 
 		          type: string
-		          enum: [«fb.name»]
+		          enum: [deviceServiceId]
 		        deviceId:
 		          type: string
 		        state:
@@ -401,17 +356,6 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		        path:
 		          type: string
 		    «ENDFOR»
-		    «infomodel.name»Services:
-		      type: object
-		      description: >-
-		        List all Services of the «infomodel.name»
-		      properties:
-		        «FOR fbProperty : infomodel.properties»
-		        «fbProperty.name»:
-		          «IF fbProperty.description !== null»description: «fbProperty.description»«ENDIF»
-		          allOf:
-		            - $ref: '#/components/schemas/«fbProperty.type.name»'
-		        «ENDFOR»
 		    «FOR entity : Utils.getReferencedEntities(infomodel)»
 		    «entity.name»:
 		      type: object
