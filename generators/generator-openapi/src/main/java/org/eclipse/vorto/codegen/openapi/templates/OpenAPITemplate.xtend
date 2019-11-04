@@ -66,7 +66,7 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		    description: List every Device
 		  - name: Services
 		    description: Services of your «infomodel.name»
-		  - name: Update State
+		  - name: States
 		    description: Update a state of your «infomodel.name»
 		paths:
 		  ###
@@ -194,7 +194,7 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		        In order to handle the message in a fire and forget manner, add
 		        a query-parameter `timeout=0` to the request.
 		      tags:
-		        - Messages
+		        - States
 		      parameters:
 		      - $ref: '#/components/parameters/devicesIdPathParam'
 		      responses:
@@ -219,7 +219,7 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		      description: |-
 		        «IF operation.description !== null»«operation.description»«ELSE»Executes the «operation.name» on the device.«ENDIF»
 		      tags:
-		        - Update State
+		        - States
 		      parameters:
 		        - $ref: '#/components/parameters/deviceIdPathParam'
 		      responses:
@@ -388,8 +388,18 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		    «fb.name»:
 		      type: object
 		      properties:
+		        '@type':
+		          type: string
+		          enum: [DeviceServiceData]
+		        id: 
+		          type: string
+		          enum: [«fb.name»]
+		        deviceId:
+		          type: string
 		        state:
 		          $ref: '#/components/schemas/«fb.name»States'
+		        path:
+		          type: string
 		    «ENDFOR»
 		    «infomodel.name»Services:
 		      type: object
@@ -473,7 +483,19 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		      content:
 		        application/json:
 		          schema:
-		            $ref: '#/components/schemas/«fb.name»States'
+		            type: object
+		            properties:
+		              '@type':
+		                type: string
+		                enum: [«operation.name»]
+		                description: The type of the object
+		              «FOR param : operation.params»
+		              «param.name»:
+		                «IF param.description !== null»description: «param.description»«ENDIF»
+		                «IF param instanceof RefParam»
+		                «wrapIfMultiple("$ref: '#/components/schemas/"+(param as RefParam).type.name+"'",param.multiplicity)»
+		                «ENDIF»
+		              «ENDFOR»
 		    «ENDIF»
 		    «ENDFOR»
 		  «ENDFOR»
