@@ -21,7 +21,7 @@ import org.eclipse.vorto.core.api.model.datatype.PrimitiveType
 import org.eclipse.vorto.core.api.model.functionblock.Event
 import org.eclipse.vorto.core.api.model.functionblock.FunctionblockModel
 import org.eclipse.vorto.core.api.model.functionblock.Operation
-//import org.eclipse.vorto.core.api.model.functionblock.PrimitiveParam
+import org.eclipse.vorto.core.api.model.functionblock.PrimitiveParam
 import org.eclipse.vorto.core.api.model.functionblock.RefParam
 import org.eclipse.vorto.core.api.model.functionblock.ReturnObjectType
 import org.eclipse.vorto.core.api.model.functionblock.ReturnPrimitiveType
@@ -59,7 +59,7 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		    Please report any trouble you might have with this documentation in our [GitHub tracker](https://github.com/BoschSmartHome/bosch-shc-api-docs/issues).
 		  version: "0.1"
 		servers:
-		  - url: https://192.168.0.10:8443/smarthome
+		  - url: https://192.168.0.10:8444/smarthome
 		    description: "Bosch Smart Home Controller URL"
 		tags:
 		  - name: Devices
@@ -79,6 +79,8 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		          Returns all Devices.
 		      tags:
 		      - Devices
+		      parameters:
+		      - $ref: '#/components/parameters/apiVersionHeaderParam'
 		      responses:
 		        '200':
 		          description: >-
@@ -106,6 +108,7 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		      tags:
 		      - Devices
 		      parameters:
+		      - $ref: '#/components/parameters/apiVersionHeaderParam'
 		      - $ref: '#/components/parameters/deviceIdPathParam'
 		      responses:
 		        '200':
@@ -131,6 +134,7 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		      tags:
 		      - Services
 		      parameters:
+		      - $ref: '#/components/parameters/apiVersionHeaderParam'
 		      - $ref: '#/components/parameters/deviceIdPathParam'
 		      responses:
 		        '200':
@@ -167,6 +171,7 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		      tags:
 		        - States
 		      parameters:
+		      - $ref: '#/components/parameters/apiVersionHeaderParam'
 		      - $ref: '#/components/parameters/devicesIdPathParam'
 		      responses:
 		        '202':
@@ -192,7 +197,8 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		      tags:
 		        - States
 		      parameters:
-		        - $ref: '#/components/parameters/deviceIdPathParam'
+		      - $ref: '#/components/parameters/apiVersionHeaderParam'
+		      - $ref: '#/components/parameters/deviceIdPathParam'
 		      responses:
 		        '202':
 		          description: |-
@@ -440,7 +446,12 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		              «FOR param : operation.params»
 		              «param.name»:
 		                «IF param.description !== null»description: «param.description»«ENDIF»
-		                «IF param instanceof RefParam»
+		                «IF param instanceof PrimitiveParam»
+		                «wrapIfMultiple(getPrimitive((param as PrimitiveParam).type).toString,param.multiplicity)»
+		                «IF param.constraintRule !== null»
+		                «handleConstraints(param.constraintRule)»
+		                «ENDIF»
+		                «ELSEIF param instanceof RefParam»
 		                «wrapIfMultiple("$ref: '#/components/schemas/"+(param as RefParam).type.name+"'",param.multiplicity)»
 		                «ENDIF»
 		              «ENDFOR»
@@ -448,6 +459,13 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		    «ENDFOR»
 		  «ENDFOR»
 		  parameters:
+		    apiVersionHeaderParam:
+		      in: header
+		      name: api-version
+		      description: The version of the API
+		      schema:
+		        type: string
+		        example: "1.0"
 		    deviceIdPathParam:
 		      name: id
 		      in: path
