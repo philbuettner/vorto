@@ -70,10 +70,10 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		  «FOR fbProperty : infomodel.properties»
 		  '/devices/{deviceId}/services/«fbProperty.name»':
 		    get:
-		      summary: Retrieve the «fbProperty.name» service of the «infomodel.name»
+		      summary: Retrieve the «fbProperty.name» service of the «infomodel.name».
 		      description: |-
 		        Returns the «fbProperty.name» service of the «infomodel.name» identified by the
-		        `id` path parameter.
+		        `deviceId` path parameter.
 		      tags:
 		      - Services
 		      parameters:
@@ -87,7 +87,7 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		              schema:
 		                $ref: '#/components/schemas/«fbProperty.type.name»'
 		        '404':
-		          description: >-
+		          description: |-
 		            The entity could not be found. One of the defined query parameters was invalid.
 		          content:
 		            application/json:
@@ -95,9 +95,10 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		                $ref: '#/components/schemas/AdvancedError'
 		  '/devices/{deviceId}/services/«fbProperty.name»/state':
 		    get:
-		      summary: Retrieve the state of the «fbProperty.name» service
+		      summary: Retrieve the State of the «fbProperty.name» service.
 		      description: |-
-		        Retrieve the state of the «fbProperty.name» service.
+		        Retrieve the State of the «fbProperty.name» service identified by the
+		        `deviceId` path parameter.
 		      tags:
 		        - States
 		      parameters:
@@ -105,13 +106,13 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		      - $ref: '#/components/parameters/deviceIdPathParam'
 		      responses:
 		        '200':
-		          description: The «fbProperty.name» was successfully retrieved.
+		          description: The State of «fbProperty.name» was successfully retrieved.
 		          content:
 		            application/json:
 		              schema:
 		                $ref: '#/components/schemas/«fbProperty.type.name»States'
 		        '404':
-		          description: >-
+		          description: |-
 		            The entity could not be found. One of the defined query parameters was invalid.
 		          content:
 		            application/json:
@@ -120,7 +121,7 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		                
 		    «FOR operation : fbProperty.type.functionblock.operations»
 		    put:
-		      summary: Executes the «operation.name» on the device
+		      summary: Executes the «operation.name» on the device.
 		      description: |-
 		        «IF operation.description !== null»«operation.description»«ELSE»Executes the «operation.name» on the device.«ENDIF»
 		      tags:
@@ -129,9 +130,8 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		      - $ref: '#/components/parameters/apiVersionHeaderParam'
 		      - $ref: '#/components/parameters/deviceIdPathParam'
 		      responses:
-		        '202':
-		          description: |-
-		            The message was sent and received by the Feature.
+		        '204':
+		          description: Accepted request.
 		          «IF operation.returnType !== null»
 		          content:
 		            application/json:
@@ -142,9 +142,22 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		                «wrapIfMultiple("$ref: '#/components/schemas/"+(operation.returnType as ReturnObjectType).returnType.name+"'",(operation.returnType as ReturnObjectType).multiplicity)»
 		                «ENDIF»
 		          «ENDIF»
+		        '400':
+		          description: One of the defined query parameters was invalid.
+		          content:
+		            application/json:
+		              schema:
+		                $ref: '#/components/schemas/AdvancedError'
 		        '404':
-		          description: >-
-		            The entity could not be found. One of the defined query parameters was invalid.
+		          description: The entity could not be found. One of the defined path parameters was invalid.
+		          content:
+		            application/json:
+		              schema:
+		                $ref: '#/components/schemas/AdvancedError'
+		        '405':
+		          description: The method was not allowed.
+		        '422':
+		          description: Mapping of defined query parameter failed.
 		          content:
 		            application/json:
 		              schema:
@@ -162,50 +175,14 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		      properties:
 		        '@type':
 		          type: string
-		          description: The type of the Object
+		          description: The type of the Object.
+		          example: JsonRestExceptionResponseEntity
 		        errorCode:
 		          type: string
-		          description: The error code of the occurred Exception
+		          description: The error code of the occurred Exception.
 		        statusCode:
 		          type: integer
-		          description: The HTTP status of the error
-		    Device:
-		      type: object
-		      properties:
-		        '@type':
-		          type: string
-		          description: The type of the Object
-		        rootDeviceId:
-		          type: string
-		          description: "A single fully qualified identifier of the Smart Home Controller."
-		        id:
-		          type: string
-		          description: "A single fully qualified identifier of the Device."
-		        deviceServiceIds:
-		          $ref: '#/components/schemas/ServiceDefinition'		          
-		        manufacturer:
-		          type: string
-		          description: The manufacturer of the Device
-		        roomId:
-		          type: string
-		          description: The id of the corresponding Room
-		        deviceModel:
-		          type: string
-		          description: The model of the Device
-		        serial:
-		          type: string
-		          description: The serial of the Device
-		        profile:
-		          type: string
-		          description: The profile of the Device
-		        name:
-		          type: string
-		          description: The name of the Device
-		        status:
-		          type: string
-		          description: Indicates if the Device is available
-		          enum: [AVAILABLE,UNAVAILABLE]
-		    
+		          description: The HTTP status of the error.
 		    ServiceDefinition:
 		      type: array
 		      minItems: 1
@@ -243,7 +220,7 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		        '@type':
 		          type: string
 		          enum: [«operation.name»]
-		          description: The type of the Object
+		          description: The type of the Object.
 		        «ENDFOR»
 		        «FOR statusProperty : fb.functionblock.status.properties»
 		        «statusProperty.name»:
@@ -281,7 +258,7 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		        '@type':
 		          type: string
 		          enum: [DeviceServiceData]
-		          description: The type of the Object
+		          description: The type of the Object.
 		        id: 
 		          type: string
 		          enum: [deviceServiceId]
@@ -371,7 +348,7 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		              '@type':
 		                type: string
 		                enum: [«operation.name»]
-		                description: The type of the Object
+		                description: The type of the Object.
 		              «FOR param : operation.params»
 		              «param.name»:
 		                «IF param.description !== null»description: «param.description»«ENDIF»
@@ -391,7 +368,7 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		    apiVersionHeaderParam:
 		      in: header
 		      name: api-version
-		      description: The version of the API
+		      description: The version of the API.
 		      schema:
 		        type: string
 		        example: "1.0"
@@ -405,7 +382,7 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		    propertyPathPathParam:
 		      name: propertyPath
 		      in: path
-		      description: The path to the Property
+		      description: The path to the Property.
 		      required: true
 		      schema:
 		        type: string
