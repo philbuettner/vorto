@@ -62,73 +62,16 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		  - url: https://192.168.0.10:8444/smarthome
 		    description: "Bosch Smart Home Controller URL"
 		tags:
-		  - name: Devices
-		    description: List every Device
 		  - name: Services
 		    description: Services of your «infomodel.name»
 		  - name: States
-		    description: Update a state of your «infomodel.name»
+		    description: States of your «infomodel.name»
 		paths:
-		  ###
-		  ### Devices
-		  ###
-		  '/devices':
-		    get:
-		      summary: List all available Devices
-		      description: >-
-		          Returns all Devices.
-		      tags:
-		      - Devices
-		      parameters:
-		      - $ref: '#/components/parameters/apiVersionHeaderParam'
-		      responses:
-		        '200':
-		          description: >-
-		            The successfully completed request contains as its result the first
-		            200 for the user available Devices.
-		          content:
-		            application/json:
-		              schema:
-		                type: array
-		                items:
-		                  $ref: '#/components/schemas/Device'
-		        '404':
-		          description: >-
-		            The entity could not be found. One of the defined query parameters was invalid.
-		          content:
-		            application/json:
-		              schema:
-		                $ref: '#/components/schemas/AdvancedError'
-		  '/devices/{id}':
-		    get:
-		      summary: Retrieve a specific Device
-		      description: >-
-		          Returns the Device identified by the `id` path parameter. The
-		          response includes details about the Device.
-		      tags:
-		      - Devices
-		      parameters:
-		      - $ref: '#/components/parameters/apiVersionHeaderParam'
-		      - $ref: '#/components/parameters/deviceIdPathParam'
-		      responses:
-		        '200':
-		          description: The request successfully returned the specific Device.
-		          content:
-		            application/json:
-		              schema:
-		                $ref: '#/components/schemas/Device'
-		        '404':
-		          description: >-
-		            The entity could not be found. One of the defined query parameters was invalid.
-		          content:
-		            application/json:
-		              schema:
-		                $ref: '#/components/schemas/AdvancedError'
 		  «FOR fbProperty : infomodel.properties»
-		  '/devices/{id}/services/«fbProperty.name»':
+		  '/devices/{deviceId}/services/«fbProperty.name»':
 		    get:
 		      summary: Retrieve the «fbProperty.name» service of the «infomodel.name»
-		      description: >-
+		      description: |-
 		        Returns the «fbProperty.name» service of the «infomodel.name» identified by the
 		        `id` path parameter.
 		      tags:
@@ -150,32 +93,23 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		            application/json:
 		              schema:
 		                $ref: '#/components/schemas/AdvancedError'
-		  «FOR event : fbProperty.type.functionblock.events»
-		  '/devices/{id}/features/«fbProperty.name»/outbox/messages/«event.name»':
-		    post:
-		      summary: Receive «event.name» emitted by the device
+		  '/devices/{deviceId}/services/«fbProperty.name»/state':
+		    get:
+		      summary: Retrieve the state of the «fbProperty.name» service
 		      description: |-
-		        Send a message with the subject `«event.name»` `FROM` the Thing
-		        identified by the `thingId` path parameter. The request body contains
-		        the device event payload and the `Content-Type` header defines its type.
-		        
-		        In order to send a message, the user needs `WRITE` permission at the
-		        Thing level.
-		        
-		        The HTTP request blocks until a response to the message is available
-		        or until the `timeout` is expired. If many clients respond to
-		        the issued message, the first response will complete the HTTP request.
-		        
-		        In order to handle the message in a fire and forget manner, add
-		        a query-parameter `timeout=0` to the request.
+		        Retrieve the state of the «fbProperty.name» service.
 		      tags:
 		        - States
 		      parameters:
 		      - $ref: '#/components/parameters/apiVersionHeaderParam'
-		      - $ref: '#/components/parameters/devicesIdPathParam'
+		      - $ref: '#/components/parameters/deviceIdPathParam'
 		      responses:
-		        '202':
-		          description: The message was sent and received by the Feature.
+		        '200':
+		          description: The «fbProperty.name» was successfully retrieved.
+		          content:
+		            application/json:
+		              schema:
+		                $ref: '#/components/schemas/«fbProperty.type.name»States'
 		        '404':
 		          description: >-
 		            The entity could not be found. One of the defined query parameters was invalid.
@@ -183,13 +117,8 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		            application/json:
 		              schema:
 		                $ref: '#/components/schemas/AdvancedError'
-		      «IF !event.properties.empty»
-		      requestBody:
-		        $ref: '#/components/requestBodies/«fbProperty.type.name»«event.name.toFirstUpper»EventPayload'
-		      «ENDIF»
-		  «ENDFOR»
-		  «FOR operation : fbProperty.type.functionblock.operations»
-		  '/devices/{id}/services/«fbProperty.name»/state':
+		                
+		    «FOR operation : fbProperty.type.functionblock.operations»
 		    put:
 		      summary: Executes the «operation.name» on the device
 		      description: |-
@@ -224,7 +153,7 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		      requestBody:
 		        $ref: '#/components/requestBodies/«fbProperty.type.name»«operation.name.toFirstUpper»Payload'
 		      «ENDIF»
-		  «ENDFOR»
+		    «ENDFOR»
 		«ENDFOR»
 		components:
 		  schemas:
@@ -467,7 +396,7 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		        type: string
 		        example: "1.0"
 		    deviceIdPathParam:
-		      name: id
+		      name: deviceId
 		      in: path
 		      description: "A single fully qualified identifier of the Device."
 		      required: true
