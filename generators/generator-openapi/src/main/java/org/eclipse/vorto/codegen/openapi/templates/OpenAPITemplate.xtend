@@ -56,7 +56,7 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		    
 		    This documentation is subject to the [Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International Public License](https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode).
 		    
-		    Please report any issues you encunter with this documentation in our [GitHub tracker](https://github.com/BoschSmartHome/bosch-shc-api-docs/issues).
+		    Please report any issues you encounter with this documentation in our [GitHub tracker](https://github.com/BoschSmartHome/bosch-shc-api-docs/issues).
 		  version: "0.3"
 		servers:
 		  - url: https://{shcIp}:8444/smarthome
