@@ -50,17 +50,20 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		info:
 		  title: Bosch Smart Home Local API for «infomodel.name» 
 		  description: |- 
-		    This descriptions focus on the JSON-based, REST-like API for a «infomodel.name».
+		    This description focus on the JSON-based, REST-like API for a «infomodel.name».
 		    
 		    By using this documentation, the developer accepts and agrees to be bound by our [Terms and Conditions](https://github.com/BoschSmartHome/bosch-shc-api-docs#terms-and-conditions).
 		    
 		    This documentation is subject to the [Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International Public License](https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode).
 		    
-		    Please report any trouble you might have with this documentation in our [GitHub tracker](https://github.com/BoschSmartHome/bosch-shc-api-docs/issues).
-		  version: "0.1"
+		    Please report any issues you encunter with this documentation in our [GitHub tracker](https://github.com/BoschSmartHome/bosch-shc-api-docs/issues).
+		  version: "0.3"
 		servers:
-		  - url: https://192.168.0.10:8444/smarthome
+		  - url: https://{shcIp}:8444/smarthome
 		    description: "Bosch Smart Home Controller URL"
+		    variables:
+		      shcIp:
+		        default: 192.168.0.10
 		tags:
 		  - name: Services
 		    description: Services of your «infomodel.name»
