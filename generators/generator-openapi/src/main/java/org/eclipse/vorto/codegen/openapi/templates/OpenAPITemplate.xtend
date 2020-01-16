@@ -57,7 +57,7 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		    This documentation is subject to the [Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International Public License](https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode).
 		    
 		    Please report any issues you encounter with this documentation in our [GitHub tracker](https://github.com/BoschSmartHome/bosch-shc-api-docs/issues).
-		  version: "0.3"
+		  version: "1.0"
 		servers:
 		  - url: https://{shcIp}:8444/smarthome
 		    description: "Bosch Smart Home Controller URL"
@@ -75,8 +75,7 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		    get:
 		      summary: Retrieve the «fbProperty.name» service of the «infomodel.name».
 		      description: |-
-		        Returns the «fbProperty.name» service of the «infomodel.name» identified by the
-		        `deviceId` path parameter.
+		        «IF fbProperty.type.description !== null»«fbProperty.type.description»«ELSE»Retrieve the «fbProperty.name» service of the «infomodel.name» identified by the `deviceId` path parameter.«ENDIF»
 		      tags:
 		      - Services
 		      parameters:
@@ -98,9 +97,9 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		                $ref: '#/components/schemas/AdvancedError'
 		  '/devices/{deviceId}/services/«fbProperty.name»/state':
 		    get:
-		      summary: Retrieve the State of the «fbProperty.name» service.
+		      summary: Retrieve the state of the «fbProperty.name» service.
 		      description: |-
-		        Retrieve the State of the «fbProperty.name» service identified by the
+		        Retrieve the state of the «fbProperty.name» service identified by the
 		        `deviceId` path parameter.
 		      tags:
 		        - States
@@ -109,7 +108,7 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		      - $ref: '#/components/parameters/deviceIdPathParam'
 		      responses:
 		        '200':
-		          description: The State of «fbProperty.name» was successfully retrieved.
+		          description: The state of «fbProperty.name» was successfully retrieved.
 		          content:
 		            application/json:
 		              schema:
@@ -126,7 +125,7 @@ class OpenAPITemplate implements IFileTemplate<InformationModel> {
 		    put:
 		      summary: Executes the «operation.name» on the device.
 		      description: |-
-		        «IF operation.description !== null»«operation.description»«ELSE»Executes the «operation.name» on the device.«ENDIF»
+		        «IF operation.description !== null»«operation.description»«ELSE»Executes the «operation.name» on the device identified by the `deviceId` path parameter.«ENDIF»
 		      tags:
 		        - States
 		      parameters:
